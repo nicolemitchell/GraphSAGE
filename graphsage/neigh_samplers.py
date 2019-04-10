@@ -26,7 +26,19 @@ class UniformNeighborSampler(Layer):
         adj_lists = tf.nn.embedding_lookup(self.adj_info, ids) 
         adj_lists = tf.transpose(tf.random_shuffle(tf.transpose(adj_lists)))
         adj_lists = tf.slice(adj_lists, [0,0], [-1, num_samples])
-        print(adj_lists)
-        print(adj_lists.shape)
-        # adj_lists = adj_lists[:,:num_samples]
+        return adj_lists
+
+
+class GetAllNeighbors(Layer):
+    """
+    Gets all neighbors.
+    Assumes that adj lists are padded with zeros
+    """
+    def __init__(self, adj_info, **kwargs):
+        super(GetAllNeighbors, self).__init__(**kwargs)
+        self.adj_info = adj_info
+
+    def _call(self, inputs):
+        ids, num_samples = inputs
+        adj_lists = tf.nn.embedding_lookup(self.adj_info, ids) 
         return adj_lists
