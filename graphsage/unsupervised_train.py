@@ -34,9 +34,9 @@ flags.DEFINE_string('train_prefix', '', 'name of the object file that stores the
 flags.DEFINE_integer('epochs', 1, 'number of epochs to train.')
 flags.DEFINE_float('dropout', 0.0, 'dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0.0, 'weight for l2 loss on embedding matrix.')
-flags.DEFINE_integer('max_degree', 100, 'maximum node degree.')
-flags.DEFINE_integer('samples_1', 25, 'number of samples in layer 1')
-flags.DEFINE_integer('samples_2', 10, 'number of users samples in layer 2')
+flags.DEFINE_integer('max_degree', 6, 'maximum node degree.')
+flags.DEFINE_integer('samples_1', 6, 'number of samples in layer 1')
+flags.DEFINE_integer('samples_2', 36, 'number of users samples in layer 2')
 flags.DEFINE_integer('dim_1', 128, 'Size of output dim (final is 2x this, if using concat)')
 flags.DEFINE_integer('dim_2', 128, 'Size of output dim (final is 2x this, if using concat)')
 flags.DEFINE_boolean('random_context', True, 'Whether to use random context or direct edges')
@@ -151,7 +151,7 @@ def train(train_data, test_data=None):
 
     if FLAGS.model == 'graphsage_mean':
         # Create model
-        sampler = UniformNeighborSampler(adj_info)
+        sampler = GetAllNeighbors(adj_info) #UniformNeighborSampler(adj_info)
         layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
                             SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
 

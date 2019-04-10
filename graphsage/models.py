@@ -274,7 +274,6 @@ class SampleAndAggregate(GeneralizedModel):
             support_sizes.append(support_size)
         return samples, support_sizes
 
-
     def aggregate(self, samples, input_features, dims, num_samples, support_sizes, batch_size=None,
             aggregators=None, name=None, concat=False, model_size="small"):
         """ At each layer, aggregate hidden representations of neighbors to compute the hidden representations 

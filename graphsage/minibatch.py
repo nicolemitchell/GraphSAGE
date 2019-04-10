@@ -93,6 +93,20 @@ class EdgeMinibatchIterator(object):
             adj[self.id2idx[nodeid], :] = neighbors
         return adj, deg
 
+    def construct_full_adj(self):
+        adj = len(self.id2idx)*np.zeros((len(self.id2idx)+1, self.max_degree))
+        deg = np.zeros((len(self.id2idx),))
+
+        for nodeid in self.G.nodes():
+            if self.G.node[nodeid]['test'] or self.G.node[nodeid]['val']:
+                continue
+            neighbors = np.array([self.id2idx[neighbor] 
+                for neighbor in self.G.neighbors(nodeid)
+                if (not self.G[nodeid][neighbor]['train_removed'])])
+            deg[self.id2idx[nodeid]] = len(neighbors)
+            adj[self.id2idx[nodeid], :] = neighbors
+        return adj, deg
+
     def construct_test_adj(self):
         adj = len(self.id2idx)*np.ones((len(self.id2idx)+1, self.max_degree))
         for nodeid in self.G.nodes():
@@ -241,6 +255,20 @@ class NodeMinibatchIterator(object):
                 neighbors = np.random.choice(neighbors, self.max_degree, replace=False)
             elif len(neighbors) < self.max_degree:
                 neighbors = np.random.choice(neighbors, self.max_degree, replace=True)
+            adj[self.id2idx[nodeid], :] = neighbors
+        return adj, deg
+
+    def construct_full_adj(self):
+        adj = len(self.id2idx)*np.zeros((len(self.id2idx)+1, self.max_degree))
+        deg = np.zeros((len(self.id2idx),))
+
+        for nodeid in self.G.nodes():
+            if self.G.node[nodeid]['test'] or self.G.node[nodeid]['val']:
+                continue
+            neighbors = np.array([self.id2idx[neighbor] 
+                for neighbor in self.G.neighbors(nodeid)
+                if (not self.G[nodeid][neighbor]['train_removed'])])
+            deg[self.id2idx[nodeid]] = len(neighbors)
             adj[self.id2idx[nodeid], :] = neighbors
         return adj, deg
 
