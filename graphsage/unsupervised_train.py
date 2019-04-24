@@ -35,10 +35,9 @@ flags.DEFINE_integer('epochs', 1, 'number of epochs to train.')
 flags.DEFINE_float('dropout', 0.0, 'dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0.0, 'weight for l2 loss on embedding matrix.')
 flags.DEFINE_integer('max_degree', 6, 'maximum node degree.')
-flags.DEFINE_integer('samples_1', 6, 'number of samples in layer 1')
-flags.DEFINE_integer('samples_2', 36, 'number of users samples in layer 2')
-flags.DEFINE_integer('dim_1', 128, 'Size of output dim (final is 2x this, if using concat)')
-flags.DEFINE_integer('dim_2', 128, 'Size of output dim (final is 2x this, if using concat)')
+flags.DEFINE_integer('num_layers', 4, 'number of layers to ')
+flags.DEFINE_list('samples', [3,6,12,30], 'number of samples in each layer')
+flags.DEFINE_list('dims', [128,128,128,128], 'sizes of output dimensions in each layer (final is 2x this, if using concat)')
 flags.DEFINE_boolean('random_context', True, 'Whether to use random context or direct edges')
 flags.DEFINE_integer('neg_sample_size', 20, 'number of negative samples')
 flags.DEFINE_integer('batch_size', 512, 'minibatch size.')
@@ -152,8 +151,7 @@ def train(train_data, test_data=None):
     if FLAGS.model == 'graphsage_mean':
         # Create model
         sampler = GetAllNeighbors(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples[i], FLAGS.dims[i]) for i in range(FLAGS.num_layers)]
 
         model = SampleAndAggregate(placeholders, 
                                      features,
@@ -166,8 +164,8 @@ def train(train_data, test_data=None):
     elif FLAGS.model == 'gcn':
         # Create model
         sampler = GetAllNeighbors(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, 2*FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, 2*FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples[i], FLAGS.dims[i]) for i in range(FLAGS.num_layers)]
+
 
         model = SampleAndAggregate(placeholders, 
                                      features,
@@ -182,8 +180,7 @@ def train(train_data, test_data=None):
 
     elif FLAGS.model == 'graphsage_seq':
         sampler = GetAllNeighbors(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples[i], FLAGS.dims[i]) for i in range(FLAGS.num_layers)]
 
         model = SampleAndAggregate(placeholders, 
                                      features,
@@ -197,8 +194,7 @@ def train(train_data, test_data=None):
 
     elif FLAGS.model == 'graphsage_maxpool':
         sampler = GetAllNeighbors(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples[i], FLAGS.dims[i]) for i in range(FLAGS.num_layers)]
 
         model = SampleAndAggregate(placeholders, 
                                     features,
@@ -211,8 +207,7 @@ def train(train_data, test_data=None):
                                      logging=True)
     elif FLAGS.model == 'graphsage_meanpool':
         sampler = GetAllNeighbors(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples[i], FLAGS.dims[i]) for i in range(FLAGS.num_layers)]
 
         model = SampleAndAggregate(placeholders, 
                                     features,
