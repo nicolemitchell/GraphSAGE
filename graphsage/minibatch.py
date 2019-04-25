@@ -33,7 +33,7 @@ class EdgeMinibatchIterator(object):
         self.batch_num = 0
 
         self.nodes = np.random.permutation(G.nodes())
-        self.adj, self.deg = self.construct_adj()
+        self.adj, self.deg = self.construct_full_adj()
         self.test_adj = self.construct_test_adj()
         if context_pairs is None:
             edges = G.edges()
@@ -104,7 +104,7 @@ class EdgeMinibatchIterator(object):
                 for neighbor in self.G.neighbors(nodeid)
                 if (not self.G[nodeid][neighbor]['train_removed'])])
             deg[self.id2idx[nodeid]] = len(neighbors)
-            adj[self.id2idx[nodeid], :] = neighbors
+            adj[self.id2idx[nodeid], :] = np.pad(neighbors, (0,self.max_degree-len(neighbors)), 'constant')
         return adj, deg
 
     def construct_test_adj(self):
@@ -217,7 +217,7 @@ class NodeMinibatchIterator(object):
         self.label_map = label_map
         self.num_classes = num_classes
 
-        self.adj, self.deg = self.construct_adj()
+        self.adj, self.deg = self.construct_full_adj()
         self.test_adj = self.construct_test_adj()
 
         self.val_nodes = [n for n in self.G.nodes() if self.G.node[n]['val']]
@@ -269,7 +269,7 @@ class NodeMinibatchIterator(object):
                 for neighbor in self.G.neighbors(nodeid)
                 if (not self.G[nodeid][neighbor]['train_removed'])])
             deg[self.id2idx[nodeid]] = len(neighbors)
-            adj[self.id2idx[nodeid], :] = neighbors
+            adj[self.id2idx[nodeid], :] = np.pad(neighbors, (0,self.max_degree-len(neighbors)), 'constant')
         return adj, deg
 
     def construct_test_adj(self):
