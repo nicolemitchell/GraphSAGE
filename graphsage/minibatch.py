@@ -269,7 +269,7 @@ class NodeMinibatchIterator(object):
                 for neighbor in self.G.neighbors(nodeid)
                 if (not self.G[nodeid][neighbor]['train_removed'])])
             deg[self.id2idx[nodeid]] = len(neighbors)
-            adj[self.id2idx[nodeid], :] = neighbors
+            adj[self.id2idx[nodeid], :] = np.pad(neighbors, (0,self.max_degree-len(neighbors)), 'constant')
         return adj, deg
 
     def construct_test_adj(self):
