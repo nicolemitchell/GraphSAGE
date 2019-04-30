@@ -41,5 +41,6 @@ class GetAllNeighbors(Layer):
     def _call(self, inputs):
         ids, num_samples = inputs
         adj_lists = tf.nn.embedding_lookup(self.adj_info, ids) 
-        adj_lists = tf.slice(adj_lists, [0,0], [-1, min(num_samples, self.adj_info.shape[1])])
+        samples = min(num_samples, self.adj_info.get_shape().as_list()[1])
+        adj_lists = tf.slice(adj_lists, [0,0], [-1, samples])
         return adj_lists
