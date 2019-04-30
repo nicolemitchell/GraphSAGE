@@ -237,8 +237,8 @@ def train(train_data, test_data=None):
     # Initialize session
     sess = tf.Session(config=config)
 
-    from tensorflow.python import debug as tf_debug
-    sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+    # from tensorflow.python import debug as tf_debug
+    # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
 
     merged = tf.summary.merge_all()
     summary_writer = tf.summary.FileWriter(log_dir(), sess.graph)
