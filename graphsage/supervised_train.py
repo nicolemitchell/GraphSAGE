@@ -49,6 +49,7 @@ flags.DEFINE_boolean('sigmoid', False, 'whether to use sigmoid loss')
 flags.DEFINE_integer('identity_dim', 0, 'Set to positive value to use identity embedding features of that dimension. Default 0.')
 
 #logging, saving, validation settings etc.
+flags.DEFINE_boolean('save_embeddings', True, 'whether to save embeddings for all nodes after training')
 flags.DEFINE_string('base_log_dir', '.', 'base directory for logging and saving embeddings')
 flags.DEFINE_integer('validate_iter', 5000, "how often to run a validation minibatch.")
 flags.DEFINE_integer('validate_batch_size', 256, "how many nodes per validation sample.")
@@ -109,6 +110,31 @@ def incremental_evaluate(sess, model, minibatch_iter, size, test=False):
     labels = np.vstack(labels)
     f1_scores = calc_f1(labels, val_preds)
     return np.mean(val_losses), f1_scores[0], f1_scores[1], (time.time() - t_test)
+
+def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
+    val_embeddings = []
+    finished = False
+    seen = set([])
+    nodes = []
+    iter_num = 0
+    name = "val"
+    while not finished:
+        feed_dict_val, finished, edges = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
+        iter_num += 1
+        outs_val = sess.run([model.loss, model.mrr, model.outputs1], 
+                            feed_dict=feed_dict_val)
+        #ONLY SAVE FOR embeds1 because of planetoid
+        for i, edge in enumerate(edges):
+            if not edge[0] in seen:
+                val_embeddings.append(outs_val[-1][i,:])
+                nodes.append(edge[0])
+                seen.add(edge[0])
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+    val_embeddings = np.vstack(val_embeddings)
+    np.save(out_dir + name + mod + ".npy",  val_embeddings)
+    with open(out_dir + name + mod + ".txt", "w") as fp:
+        fp.write("\n".join(map(str,nodes)))
 
 def construct_placeholders(num_classes):
     # Define placeholders
@@ -302,6 +328,8 @@ def train(train_data, test_data=None):
     
     print("Optimization Finished!")
     sess.run(val_adj_info.op)
+    if FLAGS.save_embeddings:
+        save_val_embeddings(sess, model, minibatch, FLAGS.validate_batch_size, log_dir())
     val_cost, val_f1_mic, val_f1_mac, duration = incremental_evaluate(sess, model, minibatch, FLAGS.batch_size)
     print("Full validation stats:",
                   "loss=", "{:.5f}".format(val_cost),
@@ -313,7 +341,7 @@ def train(train_data, test_data=None):
                 format(val_cost, val_f1_mic, val_f1_mac, duration))
 
     print("Writing test set stats to file (don't peak!)")
-    val_cost, val_f1_mic, val_f1_mac, duration = incremental_evaluate(sess, model, minibatch, FLAGS.batch_size, test=True)
+    val_cost, val_f1_mic, val_f1_mac, duration = incremental_evaluate(sess, model, minibatch, FLAGS.batch_size, test=False)
     with open(log_dir() + "test_stats.txt", "w") as fp:
         fp.write("loss={:.5f} f1_micro={:.5f} f1_macro={:.5f}".
                 format(val_cost, val_f1_mic, val_f1_mac))
