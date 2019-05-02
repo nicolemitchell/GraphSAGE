@@ -34,7 +34,7 @@ class EdgeMinibatchIterator(object):
 
         self.nodes = np.random.permutation(G.nodes())
         self.adj, self.deg = self.construct_full_adj()
-        self.test_adj = self.construct_test_adj()
+        self.test_adj = self.construct_full_test_adj()
         if context_pairs is None:
             edges = G.edges()
         else:
@@ -119,6 +119,14 @@ class EdgeMinibatchIterator(object):
             elif len(neighbors) < self.max_degree:
                 neighbors = np.random.choice(neighbors, self.max_degree, replace=True)
             adj[self.id2idx[nodeid], :] = neighbors
+        return adj
+
+    def construct_full_test_adj(self):
+        adj = len(self.id2idx)*np.ones((len(self.id2idx)+1, self.max_degree))
+        for nodeid in self.G.nodes():
+            neighbors = np.array([self.id2idx[neighbor] 
+                for neighbor in self.G.neighbors(nodeid)])
+            adj[self.id2idx[nodeid], :] = np.pad(neighbors, (0,self.max_degree-len(neighbors)), 'constant')
         return adj
 
     def end(self):
