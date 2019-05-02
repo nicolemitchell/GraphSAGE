@@ -2,6 +2,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+import ast
 import time
 import tensorflow as tf
 import numpy as np
@@ -32,17 +33,16 @@ flags.DEFINE_string('model', 'graphsage_mean', 'model names. See README for poss
 flags.DEFINE_float('learning_rate', 0.01, 'initial learning rate.')
 flags.DEFINE_string("model_size", "small", "Can be big or small; model specific def'ns")
 flags.DEFINE_string('train_prefix', '', 'prefix identifying training data. must be specified.')
+flags.DEFINE_string('exp_name', '', 'Experiment name')
 
 # left to default values in main experiments 
 flags.DEFINE_integer('epochs', 10, 'number of epochs to train.')
 flags.DEFINE_float('dropout', 0.0, 'dropout rate (1 - keep probability).')
 flags.DEFINE_float('weight_decay', 0.0, 'weight for l2 loss on embedding matrix.')
-flags.DEFINE_integer('max_degree', 128, 'maximum node degree.')
-flags.DEFINE_integer('samples_1', 25, 'number of samples in layer 1')
-flags.DEFINE_integer('samples_2', 10, 'number of samples in layer 2')
-flags.DEFINE_integer('samples_3', 0, 'number of users samples in layer 3. (Only for mean model)')
-flags.DEFINE_integer('dim_1', 128, 'Size of output dim (final is 2x this, if using concat)')
-flags.DEFINE_integer('dim_2', 128, 'Size of output dim (final is 2x this, if using concat)')
+flags.DEFINE_integer('max_degree', 6, 'maximum node degree.')
+flags.DEFINE_integer('num_layers', 5, 'number of layers')
+flags.DEFINE_string('samples', "[4,4,4,4,4]", 'number of samples in each layer')
+flags.DEFINE_string('dims', "[128,128,128,128,128]", 'sizes of output dimensions in each layer (final is 2x this, if using concat)')
 flags.DEFINE_boolean('random_context', True, 'Whether to use random context or direct edges')
 flags.DEFINE_integer('batch_size', 512, 'minibatch size.')
 flags.DEFINE_boolean('sigmoid', False, 'whether to use sigmoid loss')
@@ -80,10 +80,11 @@ def evaluate(sess, model, minibatch_iter, size=None):
 
 def log_dir():
     log_dir = FLAGS.base_log_dir + "/sup-" + FLAGS.train_prefix.split("/")[-2]
-    log_dir += "/{model:s}_{model_size:s}_{lr:0.4f}/".format(
+    log_dir += "/{model:s}_{model_size:s}_{lr:0.4f}/{exp_name:s}/".format(
             model=FLAGS.model,
             model_size=FLAGS.model_size,
-            lr=FLAGS.learning_rate)
+            lr=FLAGS.learning_rate,
+            exp_name=FLAGS.exp_name)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     return log_dir
@@ -150,15 +151,7 @@ def train(train_data, test_data=None):
     if FLAGS.model == 'graphsage_mean':
         # Create model
         sampler = UniformNeighborSampler(adj_info)
-        if FLAGS.samples_3 != 0:
-            layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                                SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2),
-                                SAGEInfo("node", sampler, FLAGS.samples_3, FLAGS.dim_2)]
-        elif FLAGS.samples_2 != 0:
-            layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                                SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
-        else:
-            layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1)]
+        layer_infos = [SAGEInfo("node", sampler, ast.literal_eval(FLAGS.samples)[i], ast.literal_eval(FLAGS.dims)[i]) for i in range(FLAGS.num_layers)]
 
         model = SupervisedGraphsage(num_classes, placeholders, 
                                      features,
@@ -172,8 +165,7 @@ def train(train_data, test_data=None):
     elif FLAGS.model == 'gcn':
         # Create model
         sampler = UniformNeighborSampler(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, 2*FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, 2*FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, ast.literal_eval(FLAGS.samples)[i], 2*ast.literal_eval(FLAGS.dims)[i]) for i in range(FLAGS.num_layers)]
 
         model = SupervisedGraphsage(num_classes, placeholders, 
                                      features,
@@ -189,8 +181,7 @@ def train(train_data, test_data=None):
 
     elif FLAGS.model == 'graphsage_seq':
         sampler = UniformNeighborSampler(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, ast.literal_eval(FLAGS.samples)[i], ast.literal_eval(FLAGS.dims)[i]) for i in range(FLAGS.num_layers)]
 
         model = SupervisedGraphsage(num_classes, placeholders, 
                                      features,
@@ -205,8 +196,7 @@ def train(train_data, test_data=None):
 
     elif FLAGS.model == 'graphsage_maxpool':
         sampler = UniformNeighborSampler(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, ast.literal_eval(FLAGS.samples)[i], ast.literal_eval(FLAGS.dims)[i]) for i in range(FLAGS.num_layers)]
 
         model = SupervisedGraphsage(num_classes, placeholders, 
                                     features,
@@ -221,8 +211,7 @@ def train(train_data, test_data=None):
 
     elif FLAGS.model == 'graphsage_meanpool':
         sampler = UniformNeighborSampler(adj_info)
-        layer_infos = [SAGEInfo("node", sampler, FLAGS.samples_1, FLAGS.dim_1),
-                            SAGEInfo("node", sampler, FLAGS.samples_2, FLAGS.dim_2)]
+        layer_infos = [SAGEInfo("node", sampler, ast.literal_eval(FLAGS.samples)[i], ast.literal_eval(FLAGS.dims)[i]) for i in range(FLAGS.num_layers)]
 
         model = SupervisedGraphsage(num_classes, placeholders, 
                                     features,
