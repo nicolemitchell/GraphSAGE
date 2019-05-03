@@ -121,9 +121,7 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
     iter_num = 0
     name = "val"
     while not finished:
-        feed_dict_val, finished, edges = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
-        print(feed_dict_val)
-        print(type(feed_dict_val))
+        feed_dict_val, batch_labels, finished, edges = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
         iter_num += 1
         outs_val = sess.run([model.preds, model.loss], 
                             feed_dict=feed_dict_val[0])
