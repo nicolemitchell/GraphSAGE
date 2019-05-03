@@ -100,6 +100,8 @@ def incremental_evaluate(sess, model, minibatch_iter, size, test=False):
     finished = False
     while not finished:
         feed_dict_val, batch_labels, finished, _  = minibatch_iter.incremental_node_val_feed_dict(size, iter_num, test=test)
+        print(feed_dict_val)
+        print(type(feed_dict_val))
         node_outs_val = sess.run([model.preds, model.loss], 
                          feed_dict=feed_dict_val)
         val_preds.append(node_outs_val[0])
@@ -122,7 +124,7 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
         feed_dict_val, finished, edges = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
         iter_num += 1
         outs_val = sess.run([model.preds, model.loss], 
-                            feed_dict=feed_dict_val)
+                            feed_dict=feed_dict_val[0])
         #ONLY SAVE FOR embeds1 because of planetoid
         for i, edge in enumerate(edges):
             if not edge[0] in seen:
