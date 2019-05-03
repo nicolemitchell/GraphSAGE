@@ -124,7 +124,7 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
         feed_dict_val, batch_labels, finished, edges = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
         iter_num += 1
         outs_val = sess.run([model.preds, model.loss], 
-                            feed_dict=feed_dict_val[0])
+                            feed_dict=feed_dict_val)
         #ONLY SAVE FOR embeds1 because of planetoid
         for i, edge in enumerate(edges):
             if not edge[0] in seen:
