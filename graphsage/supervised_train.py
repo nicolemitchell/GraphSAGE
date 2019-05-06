@@ -123,9 +123,6 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
         iter_num += 1
         outs_val = sess.run(model.outputs1, 
                             feed_dict=feed_dict_val)
-        print(outs_val)
-        print(len(outs_val))
-        print(outs_val.shape)
         #ONLY SAVE FOR embeds1 because of planetoid
         for i, node in enumerate(nodes_val):
             if not node in seen:
