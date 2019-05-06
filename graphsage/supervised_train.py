@@ -316,8 +316,11 @@ def train(train_data, test_data=None):
                       "val_f1_mic=", "{:.5f}".format(val_f1_mic), 
                       "val_f1_mac=", "{:.5f}".format(val_f1_mac), 
                       "time=", "{:.5f}".format(avg_time))
-                print(metrics.confusion_matrix(labels, outs[-1]))
-                print("Accuracy=", sum(np.equal(labels, outs[-1]))/len(np.equal(labels, outs[-1])))
+                y_pred = outs[-1]
+                y_pred[y_pred > 0.5] = 1
+                y_pred[y_pred <= 0.5] = 0
+                print(metrics.confusion_matrix(labels, y_pred))
+                print("Accuracy=", 1.0 * np.sum(np.equal(labels, y_pred))/labels.shape[0])
  
             iter += 1
             total_steps += 1
