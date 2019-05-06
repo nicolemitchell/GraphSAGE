@@ -139,7 +139,6 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
     np.save(out_dir + name + mod + ".npy",  val_embeddings)
     np.save(out_dir + name + mod + "_preds.npy", preds)
     np.save(out_dir + name + mod + "_labels.npy", labels)
-    print(preds)
     with open(out_dir + name + mod + ".txt", "w") as fp:
         fp.write("\n".join(map(str,nodes)))
 
