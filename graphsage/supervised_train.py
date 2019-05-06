@@ -319,6 +319,9 @@ def train(train_data, test_data=None):
                 y_pred = outs[-1]
                 y_pred[y_pred > 0.5] = 1
                 y_pred[y_pred <= 0.5] = 0
+                print("y_pred shape ", y_pred.shape)
+                print("sigmoid loss? ", model.sigmoid_loss)
+                print("labels shape", labels.shape)
                 print(metrics.confusion_matrix(labels, y_pred))
                 print("Accuracy=", 1.0 * np.sum(np.equal(labels, y_pred))/labels.shape[0])
  
