@@ -118,21 +118,25 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
     nodes = []
     iter_num = 0
     name = "val"
+    preds = []
     while not finished:
         feed_dict_val, batch_labels, finished, nodes_val = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
         iter_num += 1
-        outs_val = sess.run(model.outputs1, 
+        outs_val = sess.run([model.preds, model.outputs1], 
                             feed_dict=feed_dict_val)
         #ONLY SAVE FOR embeds1 because of planetoid
         for i, node in enumerate(nodes_val):
             if not node in seen:
-                val_embeddings.append(outs_val[i,:])
+                val_embeddings.append(outs_val[-1][i,:])
                 nodes.append(node)
                 seen.add(node)
+                preds.append(outs_val[0][i,:])
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     val_embeddings = np.vstack(val_embeddings)
     np.save(out_dir + name + mod + ".npy",  val_embeddings)
+    np.save(out_dir + name + mod + "_pred.npy", preds)
+    print(preds)
     with open(out_dir + name + mod + ".txt", "w") as fp:
         fp.write("\n".join(map(str,nodes)))
 
