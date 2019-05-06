@@ -316,7 +316,7 @@ def train(train_data, test_data=None):
                       "val_f1_mic=", "{:.5f}".format(val_f1_mic), 
                       "val_f1_mac=", "{:.5f}".format(val_f1_mac), 
                       "time=", "{:.5f}".format(avg_time))
-                print("Confusion Matrix", metrics.confusion_matrix(labels, outs[-1]))
+                print(metrics.confusion_matrix(labels, outs[-1]))
                 print("Accuracy=", sum(np.equal(labels, outs[-1]))/len(np.equal(labels, outs[-1])))
  
             iter += 1
