@@ -119,6 +119,7 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
     iter_num = 0
     name = "val"
     preds = []
+    labels = []
     while not finished:
         feed_dict_val, batch_labels, finished, nodes_val = minibatch_iter.incremental_embed_feed_dict(size, iter_num)
         iter_num += 1
@@ -131,11 +132,13 @@ def save_val_embeddings(sess, model, minibatch_iter, size, out_dir, mod=""):
                 nodes.append(node)
                 seen.add(node)
                 preds.append(outs_val[0][i,:])
+                labels.append(batch_labels[i,:])
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
     val_embeddings = np.vstack(val_embeddings)
     np.save(out_dir + name + mod + ".npy",  val_embeddings)
-    np.save(out_dir + name + mod + "_pred.npy", preds)
+    np.save(out_dir + name + mod + "_preds.npy", preds)
+    np.save(out_dir + name + mod + "_labels.npy", labels)
     print(preds)
     with open(out_dir + name + mod + ".txt", "w") as fp:
         fp.write("\n".join(map(str,nodes)))
