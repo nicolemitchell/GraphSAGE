@@ -319,7 +319,7 @@ def train(train_data, test_data=None):
                 y_pred = outs[-1]
                 y_pred[y_pred > 0.5] = 1
                 y_pred[y_pred <= 0.5] = 0
-                print("Confusion Matrix=", metrics.confusion_matrix(labels.argmax(axis=1), y_pred.argmax(axis=1)))
+                print(metrics.confusion_matrix(labels.argmax(axis=1), y_pred.argmax(axis=1)))
                 print("Accuracy=", 1.0 * np.sum(np.equal(labels.argmax(axis=1), y_pred.argmax(axis=1)))/labels.shape[0])
  
             iter += 1
