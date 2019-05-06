@@ -111,8 +111,8 @@ class SupervisedGraphsage(models.SampleAndAggregate):
         if self.sigmoid_loss:
             self.loss += tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                     logits=self.node_preds,
-                    targets=self.placeholders['labels']),
-                    pos_weights=9.4)
+                    targets=self.placeholders['labels'],
+                    pos_weights=9.4))
         else:
             self.loss += tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(
                     logits=self.node_preds,
